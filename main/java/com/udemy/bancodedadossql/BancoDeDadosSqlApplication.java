@@ -2,6 +2,7 @@ package com.udemy.bancodedadossql;
 
 import com.udemy.bancodedadossql.db.DB;
 import com.udemy.bancodedadossql.db.DbException;
+import com.udemy.bancodedadossql.db.DbIntegrityException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -21,21 +22,20 @@ public class BancoDeDadosSqlApplication {
         try {
             conn = DB.getConnection();
             preparedStatement = conn.prepareStatement(
-                    "UPDATE seller " +
-                            "SET BaseSalary = BaseSalary + ? " +
+                    "DELETE FROM department " +
                             "WHERE " +
-                            "(DepartmentId = ?)"
+                            "Id = ?"
             );
 
-            preparedStatement.setDouble(1,200.0);
-            preparedStatement.setInt(2,2);
+            preparedStatement.setInt(1,2);
+
 
             int rowsAffected = preparedStatement.executeUpdate();
 
             System.out.println("Done! Rows Affected: " + rowsAffected);
 
         } catch (SQLException e){
-            e.printStackTrace();
+           throw new DbIntegrityException(e.getMessage());
         } finally {
             DB.closeStatement(preparedStatement);
             DB.closeConnection();
