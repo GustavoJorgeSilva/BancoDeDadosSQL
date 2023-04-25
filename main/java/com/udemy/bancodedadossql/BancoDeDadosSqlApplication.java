@@ -17,27 +17,42 @@ public class BancoDeDadosSqlApplication {
         SpringApplication.run(BancoDeDadosSqlApplication.class, args);
 
         Connection conn = null;
-        PreparedStatement preparedStatement = null;
+        Statement statement = null;
 
         try {
             conn = DB.getConnection();
-            preparedStatement = conn.prepareStatement(
-                    "DELETE FROM department " +
-                            "WHERE " +
-                            "Id = ?"
-            );
 
-            preparedStatement.setInt(1,2);
+            conn.setAutoCommit(false);
+
+            statement = conn.createStatement();
+
+            int rows1 = statement.executeUpdate("UPDATE seller set BaseSalary = 2090 where DepartmentId = 1");
+
+//            int x = 1;
+//            if (x < 2){
+//                throw new SQLException("FAKE ERROR");
+//            }
+
+            int rows2 = statement.executeUpdate("UPDATE seller set BaseSalary = 3090 where DepartmentId = 2");
+
+            conn.commit();
+
+            System.out.println("Rows 1 " + rows1);
+            System.out.println("Rows 2 " + rows2);
 
 
-            int rowsAffected = preparedStatement.executeUpdate();
 
-            System.out.println("Done! Rows Affected: " + rowsAffected);
+
 
         } catch (SQLException e){
-           throw new DbIntegrityException(e.getMessage());
+            try {
+                conn.rollback();
+                throw new DbException("Transaction rolled back! caused by: " + e.getMessage());
+            } catch (SQLException ex) {
+                throw new DbException("Error trying to rollback! caused by: " + e.getMessage());
+            }
         } finally {
-            DB.closeStatement(preparedStatement);
+            DB.closeStatement(statement);
             DB.closeConnection();
         }
 
